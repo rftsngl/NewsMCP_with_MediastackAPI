@@ -9,7 +9,6 @@ startCommand:
     properties:
       MEDIASTACK_API_KEY:
         type: "string"
-        description: "Your Mediastack API key"
-    required: ["MEDIASTACK_API_KEY"]
+        description: "Your Mediastack API key (required for API calls)"
   exampleConfig:
     MEDIASTACK_API_KEY: "7fe3726d5472d411890c696256371833" 

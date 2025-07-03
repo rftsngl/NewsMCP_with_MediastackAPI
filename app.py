@@ -24,7 +24,10 @@ def get_api_key() -> str:
     """
     api_key = os.getenv("MEDIASTACK_API_KEY")
     if not api_key:
-        raise ValueError("MEDIASTACK_API_KEY environment variable is required")
+        raise ValueError(
+            "MEDIASTACK_API_KEY environment variable is required to make API calls. "
+            "Please configure your API key in the server settings."
+        )
     return api_key
 
 # Helper function for API calls
@@ -35,7 +38,7 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
     # Get API key only when making actual API calls (lazy loading)
     try:
         api_key = get_api_key()
-    except Exception as e:
+    except ValueError as e:
         raise RuntimeError(f"Configuration Error: {str(e)}") from e
 
     # Add API key to params
