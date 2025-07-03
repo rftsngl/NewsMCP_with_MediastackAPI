@@ -2,19 +2,14 @@
 FastMCP Server for mediastack News API - HTTP version for Smithery deployment
 """
 import os
-import asyncio
-import signal
 import sys
 from app import mcp
 
-async def shutdown_handler():
-    """Graceful shutdown handler"""
-    print("Shutting down server...")
-    sys.exit(0)
+
 
 if __name__ == "__main__":
     # Get configuration from environment
-    api_key = os.getenv("7fe3726d5472d411890c696256371833")
+    api_key = os.getenv("MEDIASTACK_API_KEY")
     if api_key:
         print(f"Using API key: {api_key[:10]}...")
     else:
@@ -27,9 +22,6 @@ if __name__ == "__main__":
     print("Server is running in HTTP mode for Smithery deployment")
     print(f"MCP endpoint will be available at: http://0.0.0.0:{port}/mcp")
     
-    # Set up signal handlers for graceful shutdown
-    signal.signal(signal.SIGINT, lambda s, f: asyncio.create_task(shutdown_handler()))
-    signal.signal(signal.SIGTERM, lambda s, f: asyncio.create_task(shutdown_handler()))
     
     try:
         # Start FastMCP with built-in HTTP server
