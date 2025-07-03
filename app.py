@@ -7,8 +7,12 @@ import asyncio
 from typing import Optional, Dict, Any, List
 from fastmcp import FastMCP
 
-# Initialize FastMCP
-mcp = FastMCP("Mediastack News MCP Server")
+# Initialize FastMCP with optimized settings
+mcp = FastMCP(
+    "Mediastack News MCP Server",
+    # Add server description
+    description="MCP server providing access to mediastack news API for fetching latest news and sources"
+)
 
 # API Configuration - Lazy loaded
 MEDIASTACK_BASE_URL = "https://api.mediastack.com/v1"
@@ -42,14 +46,32 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
     try:
         # Run requests in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
+        
+        # Add session configuration for better performance
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'MediastackMCP/1.0',
+            'Accept': 'application/json',
+            'Connection': 'keep-alive'
+        })
+        
         response = await loop.run_in_executor(
             None, 
-            lambda: requests.get(f"{MEDIASTACK_BASE_URL}/{endpoint}", params=params, timeout=30)
+            lambda: session.get(f"{MEDIASTACK_BASE_URL}/{endpoint}", params=params, timeout=10)
         )
         response.raise_for_status()
-        return response.json()
+        
+        # Validate response is JSON
+        try:
+            result = response.json()
+            return result
+        except ValueError as e:
+            raise Exception(f"Invalid JSON response from API: {str(e)}")
+            
     except requests.exceptions.Timeout:
-        raise Exception("API Request timed out. Please try again.")
+        raise Exception("API Request timed out after 10 seconds. Please try again.")
+    except requests.exceptions.ConnectionError:
+        raise Exception("Failed to connect to mediastack API. Please check your internet connection.")
     except requests.exceptions.HTTPError as e:
         error_data = {}
         try:
@@ -62,9 +84,13 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
             error_code = error_data['error'].get('code', 'unknown')
             raise Exception(f"Mediastack API Error [{error_code}]: {error_msg}")
         else:
-            raise Exception(f"HTTP Error: {str(e)}")
+            raise Exception(f"HTTP Error {response.status_code}: {str(e)}")
     except requests.exceptions.RequestException as e:
         raise Exception(f"Network Error: {str(e)}")
+    except Exception as e:
+        if "Configuration Error" in str(e):
+            raise e  # Re-raise configuration errors as-is
+        raise Exception(f"Unexpected error: {str(e)}")
 
 @mcp.tool()
 async def get_latest_news(
