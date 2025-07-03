@@ -32,6 +32,9 @@ except (ImportError, ModuleNotFoundError, SyntaxError) as e:
     sys.exit(1)
 
 if __name__ == "__main__":
+    # Parse Smithery configuration from environment or query parameters
+    # In container environment, Smithery may pass config via environment
+    
     # Get configuration from environment - but don't validate API key at startup
     api_key = os.getenv("MEDIASTACK_API_KEY", "").strip()
     if api_key:
