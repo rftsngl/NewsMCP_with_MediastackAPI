@@ -9,14 +9,12 @@ import requests
 from fastmcp import FastMCP
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
-
 # Initialize FastMCP
 mcp = FastMCP("Mediastack News MCP Server")
 
 def get_api_key() -> str:
     """Get API key from environment"""
+    load_dotenv()
     api_key = os.getenv("MEDIASTACK_API_KEY")
     if not api_key:
         raise ValueError("MEDIASTACK_API_KEY environment variable is required")
