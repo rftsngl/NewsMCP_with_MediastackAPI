@@ -44,7 +44,7 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
         # Run requests in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
         
-        # Add session configuration for better performance
+        # Add session configuration for better performance and shorter timeout
         session = requests.Session()
         session.headers.update({
             'User-Agent': 'MediastackMCP/1.0',
@@ -54,19 +54,22 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
         
         response = await loop.run_in_executor(
             None, 
-            lambda: session.get(f"{MEDIASTACK_BASE_URL}/{endpoint}", params=params, timeout=10)
+            lambda: session.get(f"{MEDIASTACK_BASE_URL}/{endpoint}", params=params, timeout=15)
         )
         response.raise_for_status()
         
         # Validate response is JSON
         try:
             result = response.json()
+            # Validate that we got a proper response structure
+            if not isinstance(result, dict):
+                raise ValueError("API returned non-dict response")
             return result
         except ValueError as e:
             raise ValueError(f"Invalid JSON response from API: {str(e)}") from e
             
     except requests.exceptions.Timeout as exc:
-        raise TimeoutError("API Request timed out after 10 seconds. Please try again.") from exc
+        raise TimeoutError("API Request timed out after 15 seconds. Please try again.") from exc
     except requests.exceptions.ConnectionError as exc:
         raise ConnectionError("Failed to connect to mediastack API. Please check your internet connection.") from exc
     except requests.exceptions.HTTPError as e:
@@ -74,7 +77,8 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
         try:
             error_data = response.json()
         except (ValueError, KeyError):
-            pass
+            # JSON parsing failed, use default error message
+            error_data = {}
         
         if error_data.get('error'):
             error_msg = error_data['error'].get('message', str(e))
