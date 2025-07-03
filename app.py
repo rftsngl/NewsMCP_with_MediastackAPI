@@ -2,17 +2,14 @@
 MCP Tools for mediastack News API
 """
 import os
-import requests
 import asyncio
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
+
+import requests
 from fastmcp import FastMCP
 
-# Initialize FastMCP with optimized settings
-mcp = FastMCP(
-    "Mediastack News MCP Server",
-    # Add server description
-    description="MCP server providing access to mediastack news API for fetching latest news and sources"
-)
+# Initialize FastMCP
+mcp = FastMCP("Mediastack News MCP Server")
 
 # API Configuration - Lazy loaded
 MEDIASTACK_BASE_URL = "https://api.mediastack.com/v1"
@@ -23,7 +20,7 @@ def get_api_key() -> str:
     """
     api_key = os.getenv("MEDIASTACK_API_KEY")
     if not api_key:
-        raise Exception("MEDIASTACK_API_KEY environment variable is required")
+        raise ValueError("MEDIASTACK_API_KEY environment variable is required")
     return api_key
 
 # Helper function for API calls
@@ -35,7 +32,7 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
     try:
         api_key = get_api_key()
     except Exception as e:
-        raise Exception(f"Configuration Error: {str(e)}")
+        raise RuntimeError(f"Configuration Error: {str(e)}") from e
     
     # Add API key to params
     params['access_key'] = api_key
@@ -66,31 +63,31 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
             result = response.json()
             return result
         except ValueError as e:
-            raise Exception(f"Invalid JSON response from API: {str(e)}")
+            raise ValueError(f"Invalid JSON response from API: {str(e)}") from e
             
-    except requests.exceptions.Timeout:
-        raise Exception("API Request timed out after 10 seconds. Please try again.")
-    except requests.exceptions.ConnectionError:
-        raise Exception("Failed to connect to mediastack API. Please check your internet connection.")
+    except requests.exceptions.Timeout as exc:
+        raise TimeoutError("API Request timed out after 10 seconds. Please try again.") from exc
+    except requests.exceptions.ConnectionError as exc:
+        raise ConnectionError("Failed to connect to mediastack API. Please check your internet connection.") from exc
     except requests.exceptions.HTTPError as e:
         error_data = {}
         try:
             error_data = response.json()
-        except:
+        except (ValueError, KeyError):
             pass
         
         if error_data.get('error'):
             error_msg = error_data['error'].get('message', str(e))
             error_code = error_data['error'].get('code', 'unknown')
-            raise Exception(f"Mediastack API Error [{error_code}]: {error_msg}")
+            raise RuntimeError(f"Mediastack API Error [{error_code}]: {error_msg}") from e
         else:
-            raise Exception(f"HTTP Error {response.status_code}: {str(e)}")
+            raise RuntimeError(f"HTTP Error {response.status_code}: {str(e)}") from e
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Network Error: {str(e)}")
+        raise ConnectionError(f"Network Error: {str(e)}") from e
     except Exception as e:
         if "Configuration Error" in str(e):
             raise e  # Re-raise configuration errors as-is
-        raise Exception(f"Unexpected error: {str(e)}")
+        raise RuntimeError(f"Unexpected error: {str(e)}") from e
 
 @mcp.tool()
 async def get_latest_news(
@@ -128,7 +125,7 @@ async def get_latest_news(
     # Validate sort parameter
     valid_sort_options = ['published_desc', 'published_asc', 'popularity']
     if sort is not None and sort not in valid_sort_options:
-        raise Exception(f"Invalid sort option. Must be one of: {', '.join(valid_sort_options)}")
+        raise ValueError(f"Invalid sort option. Must be one of: {', '.join(valid_sort_options)}")
     
     params = {
         "keywords": keywords,
