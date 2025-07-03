@@ -68,4 +68,3 @@ if __name__ == "__main__":
     except (ValueError, TypeError, AttributeError) as e:
         logger.error("Unexpected error: %s", e)
         sys.exit(1)
-    

@@ -37,17 +37,17 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
         api_key = get_api_key()
     except Exception as e:
         raise RuntimeError(f"Configuration Error: {str(e)}") from e
-    
+
     # Add API key to params
     params['access_key'] = api_key
-    
+
     # Remove None values from params
     params = {k: v for k, v in params.items() if v is not None}
-    
+
     try:
         # Run requests in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
-        
+
         # Add session configuration for better performance and shorter timeout
         session = requests.Session()
         session.headers.update({
@@ -55,13 +55,13 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
             'Accept': 'application/json',
             'Connection': 'keep-alive'
         })
-        
+
         response = await loop.run_in_executor(
-            None, 
+            None,
             lambda: session.get(f"{MEDIASTACK_BASE_URL}/{endpoint}", params=params, timeout=15)
         )
         response.raise_for_status()
-        
+
         # Validate response is JSON
         try:
             result = response.json()
@@ -71,7 +71,7 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
             return result
         except ValueError as e:
             raise ValueError(f"Invalid JSON response from API: {str(e)}") from e
-            
+
     except requests.exceptions.Timeout as exc:
         raise TimeoutError("API Request timed out after 15 seconds. Please try again.") from exc
     except requests.exceptions.ConnectionError as exc:
@@ -83,7 +83,7 @@ async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict
         except (ValueError, KeyError):
             # JSON parsing failed, use default error message
             error_data = {}
-        
+
         if error_data.get('error'):
             error_msg = error_data['error'].get('message', str(e))
             error_code = error_data['error'].get('code', 'unknown')
@@ -111,7 +111,7 @@ async def get_latest_news(
 ) -> Dict[str, Any]:
     """
     Fetches the most recent news stories from mediastack.
-    
+
     Args:
         keywords: Search terms to filter news. Use - to exclude terms (e.g., "bitcoin -ethereum") (optional)
         sources: Include/exclude news sources, comma-separated. Use - to exclude (e.g., "cnn,bbc" or "cnn,-fox") (optional)
@@ -122,19 +122,19 @@ async def get_latest_news(
         sort: Sort order. Options: published_desc (default), published_asc, popularity (optional)
         limit: Maximum number of results (1-100), default 25 (optional)
         offset: Pagination offset, default 0 (optional)
-    
+
     Returns:
         JSON response from mediastack API containing news articles
     """
     # Validate limit
     if limit is not None:
         limit = min(max(1, limit), 100)  # Cap between 1 and 100
-    
+
     # Validate sort parameter
     valid_sort_options = ['published_desc', 'published_asc', 'popularity']
     if sort is not None and sort not in valid_sort_options:
         raise ValueError(f"Invalid sort option. Must be one of: {', '.join(valid_sort_options)}")
-    
+
     params = {
         "keywords": keywords,
         "sources": sources,
@@ -146,7 +146,7 @@ async def get_latest_news(
         "limit": limit,
         "offset": offset
     }
-    
+
     return await make_mediastack_request("news", params)
 
 @mcp.tool()
@@ -161,7 +161,7 @@ async def get_sources(
 ) -> Dict[str, Any]:
     """
     List available news sources from mediastack.
-    
+
     Args:
         search: Free-text search term to filter sources (optional)
         sources: Include/exclude specific sources, comma-separated. Use - to exclude (optional)
@@ -170,14 +170,14 @@ async def get_sources(
         categories: News categories, comma-separated. Options: business, entertainment, general, health, science, sports, technology. Use - to exclude (optional)
         limit: Maximum number of results (1-100), default 25 (optional)
         offset: Pagination offset, default 0 (optional)
-    
+
     Returns:
         JSON response from mediastack API containing news sources
     """
     # Validate limit
     if limit is not None:
         limit = min(max(1, limit), 100)  # Cap between 1 and 100
-    
+
     params = {
         "search": search,
         "sources": sources,
@@ -187,5 +187,5 @@ async def get_sources(
         "limit": limit,
         "offset": offset
     }
-    
-    return await make_mediastack_request("sources", params) 
+
+    return await make_mediastack_request("sources", params)
