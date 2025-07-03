@@ -15,8 +15,8 @@ COPY . .
 ENV PORT=8000
 EXPOSE $PORT
 
-# Healthcheck for HTTP endpoint
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:'+str(__import__('os').getenv('PORT', '8000'))+'/health', timeout=5)" || exit 1
+# Healthcheck for FastMCP HTTP endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD python -c "import requests; import os; requests.post('http://localhost:'+str(os.getenv('PORT', '8000'))+'/mcp', json={'jsonrpc': '2.0', 'method': 'ping', 'id': 1}, timeout=5)" || exit 1
 
 CMD ["python", "server.py"]
