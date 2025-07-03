@@ -7,6 +7,10 @@ from typing import Optional, Dict, Any
 
 import requests
 from fastmcp import FastMCP
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize FastMCP
 mcp = FastMCP("Mediastack News MCP Server")
