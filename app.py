@@ -3,6 +3,7 @@ MCP Tools for mediastack News API
 """
 import os
 import requests
+import asyncio
 from typing import Optional, Dict, Any, List
 from fastmcp import FastMCP
 
@@ -22,7 +23,7 @@ def get_api_key() -> str:
     return api_key
 
 # Helper function for API calls
-def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
+async def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Make a request to mediastack API with error handling
     """
@@ -39,7 +40,12 @@ def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict[str, 
     params = {k: v for k, v in params.items() if v is not None}
     
     try:
-        response = requests.get(f"{MEDIASTACK_BASE_URL}/{endpoint}", params=params, timeout=30)
+        # Run requests in thread pool to avoid blocking
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None, 
+            lambda: requests.get(f"{MEDIASTACK_BASE_URL}/{endpoint}", params=params, timeout=30)
+        )
         response.raise_for_status()
         return response.json()
     except requests.exceptions.Timeout:
@@ -61,7 +67,7 @@ def make_mediastack_request(endpoint: str, params: Dict[str, Any]) -> Dict[str, 
         raise Exception(f"Network Error: {str(e)}")
 
 @mcp.tool()
-def get_latest_news(
+async def get_latest_news(
     keywords: Optional[str] = None,
     sources: Optional[str] = None,
     countries: Optional[str] = None,
@@ -110,10 +116,10 @@ def get_latest_news(
         "offset": offset
     }
     
-    return make_mediastack_request("news", params)
+    return await make_mediastack_request("news", params)
 
 @mcp.tool()
-def get_sources(
+async def get_sources(
     search: Optional[str] = None,
     sources: Optional[str] = None,
     countries: Optional[str] = None,
@@ -151,4 +157,4 @@ def get_sources(
         "offset": offset
     }
     
-    return make_mediastack_request("sources", params) 
+    return await make_mediastack_request("sources", params) 
