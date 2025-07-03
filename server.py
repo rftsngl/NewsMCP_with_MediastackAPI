@@ -20,8 +20,17 @@ if sys.platform == 'win32':
             pass  # Use default locale
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, encoding='utf-8')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    encoding='utf-8'
+)
 logger = logging.getLogger(__name__)
+
+# Enable FastMCP debug logging
+logging.getLogger("fastmcp").setLevel(logging.DEBUG)
+logging.getLogger("mcp").setLevel(logging.DEBUG)
+logging.getLogger("uvicorn").setLevel(logging.DEBUG)
 
 # Import app after setting encoding
 try:
