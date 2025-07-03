@@ -1,5 +1,15 @@
-version: 1
-start:
-  command: python
-  args:
-    - server.py 
+runtime: "container"
+build:
+  dockerfile: "Dockerfile"
+  dockerBuildPath: "."
+startCommand:
+  type: "http"
+  configSchema:
+    type: "object"
+    properties:
+      MEDIASTACK_API_KEY:
+        type: "string"
+        description: "Your Mediastack API key"
+    required: ["MEDIASTACK_API_KEY"]
+  exampleConfig:
+    MEDIASTACK_API_KEY: "7fe3726d5472d411890c696256371833" 
