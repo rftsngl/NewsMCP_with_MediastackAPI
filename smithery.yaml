@@ -4,13 +4,13 @@ build:
   dockerBuildPath: "."
 startCommand:
   type: "http"
-  port: 8000
   configSchema:
     type: "object"
     properties:
       MEDIASTACK_API_KEY:
         type: "string"
         description: "Your Mediastack API key"
+    required: ["MEDIASTACK_API_KEY"]
   exampleConfig:
     MEDIASTACK_API_KEY: "your-api-key-here"
 schemaVersion: "0.1"

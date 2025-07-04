@@ -17,25 +17,34 @@ def get_api_key() -> str:
     load_dotenv()
     api_key = os.getenv("MEDIASTACK_API_KEY")
     if not api_key:
-        raise ValueError("MEDIASTACK_API_KEY environment variable is required")
+        raise ValueError("MEDIASTACK_API_KEY environment variable is required. Please configure it in your Smithery deployment.")
     return api_key
 
 async def make_api_request(endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
     """Make API request to mediastack"""
+    # Get API key only when needed (lazy loading)
+    try:
+        api_key = get_api_key()
+    except ValueError as e:
+        return {"error": str(e), "status": "configuration_required"}
+    
     # Add API key
-    params['access_key'] = get_api_key()
+    params['access_key'] = api_key
     
     # Clean params
     params = {k: v for k, v in params.items() if v is not None}
     
-    # Make request
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(
-        None,
-        lambda: requests.get(f"https://api.mediastack.com/v1/{endpoint}", params=params, timeout=15)
-    )
-    response.raise_for_status()
-    return response.json()
+    try:
+        # Make request
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: requests.get(f"https://api.mediastack.com/v1/{endpoint}", params=params, timeout=15)
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"API request failed: {str(e)}", "status": "api_error"}
 
 @mcp.tool()
 async def get_latest_news(
