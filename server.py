@@ -113,6 +113,8 @@ async def handle_tools_call(params, request_id):
     tool_name = params.get("name")
     arguments = params.get("arguments", {})
     
+    print(f"DEBUG: Tool call - name: {tool_name}, arguments: {arguments}")
+    
     if not tool_name:
         return create_jsonrpc_response(
             error={"code": -32602, "message": "Invalid params: missing tool name"},
@@ -124,19 +126,35 @@ async def handle_tools_call(params, request_id):
         fastmcp_tools = await mcp.get_tools()
         if tool_name in fastmcp_tools:
             tool_func = fastmcp_tools[tool_name]
+            print(f"DEBUG: Calling tool {tool_name}...")
+            
             # Tool'u doğru şekilde çağır - FastMCP'de call metodu kullan
             result = await tool_func.call(**arguments)
+            print(f"DEBUG: Tool result type: {type(result)}")
+            print(f"DEBUG: Tool result: {result}")
             
-            return create_jsonrpc_response(
-                result={"content": [{"type": "text", "text": str(result)}]},
+            # Result formatını düzelt - JSON olarak döndür
+            if isinstance(result, dict):
+                # API'den gelen JSON response'u düzgün formatta döndür
+                formatted_result = json.dumps(result, indent=2, ensure_ascii=False)
+            else:
+                formatted_result = str(result)
+            
+            response = create_jsonrpc_response(
+                result={"content": [{"type": "text", "text": formatted_result}]},
                 request_id=request_id
             )
+            print(f"DEBUG: Final response: {json.dumps(response, indent=2)}")
+            return response
         else:
             return create_jsonrpc_response(
                 error={"code": -32601, "message": f"Tool not found: {tool_name}"},
                 request_id=request_id
             )
     except Exception as e:
+        print(f"DEBUG: Tool execution error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return create_jsonrpc_response(
             error={"code": -32603, "message": f"Tool execution failed: {str(e)}"},
             request_id=request_id
