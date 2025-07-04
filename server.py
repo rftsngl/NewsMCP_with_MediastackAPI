@@ -7,13 +7,13 @@ import sys
 # Import app
 try:
     from app import mcp
-except Exception as e:
+except ImportError as e:
     print(f"Error importing app: {e}")
     sys.exit(1)
 
 if __name__ == "__main__":
     # Simple environment setup
-    port = int(os.getenv("PORT", "8003"))
+    port = int(os.getenv("PORT", "8000"))
     
     print(f"Starting MCP Server on port {port}...")
     
@@ -24,6 +24,7 @@ if __name__ == "__main__":
             host="0.0.0.0", 
             port=port
         )
-    except Exception as e:
+    except (RuntimeError, KeyboardInterrupt, SystemExit) as e:
+        # The server may raise various runtime errors; catching all ensures graceful shutdown.
         print(f"Server error: {e}")
         sys.exit(1)
