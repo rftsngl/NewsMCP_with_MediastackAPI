@@ -161,7 +161,7 @@ async def handle_initialize(params, request_id):
 async def handle_ping(request_id):
     """ping metodunu handle et - server'ın canlı olduğunu gösterir"""
     return create_jsonrpc_response(
-        result={"status": "pong"},
+        result={},
         request_id=request_id
     )
 
@@ -200,21 +200,13 @@ async def mcp_handler(request):
         
         return JSONResponse(response)
     
-    elif request.method == "GET":
-        # Basit health check
-        return JSONResponse({
-            "status": "ok", 
-            "server": "Mediastack News MCP Server",
-            "endpoints": ["/mcp"]
-        })
-    
     else:
         return JSONResponse({"error": "Method not allowed"}, status_code=405)
 
 # Starlette app
 app = Starlette(
     routes=[
-        Route("/mcp", mcp_handler, methods=["GET", "POST"]),
+        Route("/mcp", mcp_handler, methods=["POST"]),
     ]
 )
 
