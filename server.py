@@ -124,8 +124,8 @@ async def handle_tools_call(params, request_id):
         fastmcp_tools = await mcp.get_tools()
         if tool_name in fastmcp_tools:
             tool_func = fastmcp_tools[tool_name]
-            # Tool'u çağır
-            result = await tool_func(**arguments)
+            # Tool'u doğru şekilde çağır - FastMCP'de call metodu kullan
+            result = await tool_func.call(**arguments)
             
             return create_jsonrpc_response(
                 result={"content": [{"type": "text", "text": str(result)}]},
