@@ -12,4 +12,8 @@ startCommand:
         type: "string"
         description: "Your Mediastack API key"
   exampleConfig:
-    MEDIASTACK_API_KEY: "your-api-key-here" 
+    MEDIASTACK_API_KEY: "your-api-key-here"
+schemaVersion: "0.1"
+name: "news-mediastack-mcp"
+description: "Mediastack API ile haber getiren MCP sunucusu."
+version: "0.1.0" 
