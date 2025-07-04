@@ -39,7 +39,7 @@ To start the MCP server, run the following command:
 ```bash
 python server.py
 ```
-By default, the server will start on `http://0.0.0.0:8003`.
+By default, the server will start on `http://0.0.0.0:8080`.
 
 ## 🛠️ Available Tools
 
