@@ -158,6 +158,13 @@ async def handle_initialize(params, request_id):
         request_id=request_id
     )
 
+async def handle_ping(request_id):
+    """ping metodunu handle et - server'ın canlı olduğunu gösterir"""
+    return create_jsonrpc_response(
+        result={"status": "pong"},
+        request_id=request_id
+    )
+
 async def mcp_handler(request):
     """MCP JSON-RPC 2.0 handler"""
     if request.method == "POST":
@@ -183,6 +190,8 @@ async def mcp_handler(request):
             response = await handle_tools_call(params, request_id)
         elif method == "initialize":
             response = await handle_initialize(params, request_id)
+        elif method == "ping":
+            response = await handle_ping(request_id)
         else:
             response = create_jsonrpc_response(
                 error={"code": -32601, "message": f"Method not found: {method}"},
