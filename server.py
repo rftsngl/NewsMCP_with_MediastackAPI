@@ -127,9 +127,9 @@ async def handle_tools_call(params, request_id):
         if tool_name in fastmcp_tools:
             tool_func = fastmcp_tools[tool_name]
             print(f"DEBUG: Calling tool {tool_name}...")
-            
-            # Tool'u doğru şekilde çağır - FastMCP'de call metodu kullan
-            result = await tool_func.call(**arguments)
+
+            # Tool'u doğru şekilde çağır - FastMCP FunctionTool'da fn attribute kullan
+            result = await tool_func.fn(**arguments)
             print(f"DEBUG: Tool result type: {type(result)}")
             print(f"DEBUG: Tool result: {result}")
             
