@@ -1,4 +1,5 @@
 # Mediastack News MCP Server
+[![smithery badge](https://smithery.ai/badge/@rftsngl/newsmcp_mediastackapi)](https://smithery.ai/server/@rftsngl/newsmcp_mediastackapi)
 
 A FastMCP server that exposes the Mediastack News API as MCP (Model Context Protocol) tools. This server can be used as a plug-and-play backend for Smithery.ai or any other MCP-compatible agent platform.
 
@@ -9,6 +10,15 @@ A FastMCP server that exposes the Mediastack News API as MCP (Model Context Prot
 
 ## 🚀 Installation
 
+### Installing via Smithery
+
+To install Mediastack News automatically via [Smithery](https://smithery.ai/server/@rftsngl/newsmcp_mediastackapi):
+
+```bash
+npx -y @smithery/cli install @rftsngl/newsmcp_mediastackapi
+```
+
+### Manual Installation
 1.  Clone this repository:
     ```bash
     git clone <repository-url>
