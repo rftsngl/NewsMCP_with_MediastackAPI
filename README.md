@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/rftsngl-newsmcp-with-mediastackapi-badge.png)](https://mseep.ai/app/rftsngl-newsmcp-with-mediastackapi)
+
 # Mediastack News MCP Server
 
 A FastMCP server that exposes the Mediastack News API as MCP (Model Context Protocol) tools. This server can be used as a plug-and-play backend for Smithery.ai or any other MCP-compatible agent platform.
